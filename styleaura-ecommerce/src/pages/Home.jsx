@@ -20,26 +20,26 @@ const Home = () => {
   }, []);
 
   const handleSubscribe = async () => {
-    if (!email) return toast.warn('Please enter your email');
-    try {
-      const res = await fetch('http://192.168.43.139:5000/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+  if (!email) return toast.warn('Please enter your email');
+  try {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/newsletter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
 
-      const data = await res.json();
-      if (data.success) {
-        setEmail('');
-        toast.success('Thanks for subscribing!');
-      } else {
-        toast.error(data.message || 'Failed to subscribe.');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Server error. Try again.');
+    const data = await res.json();
+    if (data.success) {
+      setEmail('');
+      toast.success('Thanks for subscribing!');
+    } else {
+      toast.error(data.message || 'Failed to subscribe.');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error('Server error. Try again.');
+  }
+};
 
   return (
     <div className="min-h-screen bg-white font-sans">
