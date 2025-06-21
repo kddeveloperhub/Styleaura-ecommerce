@@ -1,0 +1,19 @@
+# Node dependencies
+node_modules
+**/node_modules
+
+# Builds
+build
+dist
+
+# OS & IDE junk
+.DS_Store
+.env
+.env.*.local
+
+# Log files
+*.log
+
+# Secrets
+styleaura-ecommerce/.env
+backend/.env
