@@ -15,33 +15,32 @@ const app = express();
 // === CORS CONFIG ===
 
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://styleaura00.netlify.app',
+  'https://styleaura-ecommerce.onrender.com',
+];
+
 app.use(cors({
   origin: (origin, cb) => {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'https://styleaura00.netlify.app'
-    ];
-
-    if (!origin || allowedOrigins.includes(origin) || origin.includes('netlify.app')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not allowed by CORS'));
-    }
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
   },
-  credentials: true, // ✅ REQUIRED to allow cookies to pass
+  credentials: true,
 }));
+
 
 app.use(express.json());
 
 // === SESSION SETUP ===
 app.use(session({
-  secret: process.env.ADMIN_SECRET || 'supersecret',
+  secret: process.env.ADMIN_SECRET || 'default-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: true, // ✅ important for cross-origin
+    sameSite: 'none', // ✅ required for Netlify→Render cookies
   },
 }));
 
