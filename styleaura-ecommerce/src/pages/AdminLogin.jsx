@@ -12,13 +12,11 @@ const AdminLogin = () => {
   const emailRef = useRef(null);
 
   useEffect(() => {
-    if (emailRef.current) {
-      emailRef.current.focus();
-    }
+    if (emailRef.current) emailRef.current.focus();
   }, []);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -26,10 +24,10 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const res = await fetch('https://styleaura-ecommerce.onrender.com/api/admin/login', {
+      const res = await fetch(`${API_BASE}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Required for session cookies
+        credentials: 'include',
         body: JSON.stringify(form),
       });
 
@@ -53,7 +51,6 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
-
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 shadow-md rounded-lg w-full max-w-md border border-gray-200"
@@ -67,9 +64,9 @@ const AdminLogin = () => {
           ref={emailRef}
           type="email"
           name="email"
-          placeholder="admin@styleaura.com"
           value={form.email}
           onChange={handleChange}
+          placeholder="admin@styleaura.com"
           className="w-full border px-4 py-2 mb-4 rounded focus:outline-pink-500"
           required
         />
@@ -78,9 +75,9 @@ const AdminLogin = () => {
         <input
           type="password"
           name="password"
-          placeholder="********"
           value={form.password}
           onChange={handleChange}
+          placeholder="********"
           className="w-full border px-4 py-2 mb-6 rounded focus:outline-pink-500"
           required
         />
