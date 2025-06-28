@@ -14,12 +14,9 @@ dotenv.config();
 const app = express();
 
 // === CORS CONFIG ===
-
-
 const allowedOrigins = [
   'http://localhost:3000',
   'https://styleaura00.netlify.app',
-  'https://styleaura-ecommerce.onrender.com',
 ];
 
 app.use(cors({
@@ -29,7 +26,6 @@ app.use(cors({
   },
   credentials: true,
 }));
-
 
 app.use(express.json());
 
@@ -44,8 +40,8 @@ app.use(session({
   }),
   cookie: {
     httpOnly: true,
-    secure: true,        // ✅ needed for Render + Netlify
-    sameSite: 'none',    // ✅ needed for cross-origin cookies
+    secure: process.env.NODE_ENV === 'production', // ✅ Important for Render
+    sameSite: 'none', // ✅ Required for cross-origin (Netlify)
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   },
 }));
@@ -73,7 +69,6 @@ const requireAdmin = (req, res, next) => {
 
 // === ROUTES ===
 
-// Admin login
 app.post('/api/admin/login', (req, res) => {
   const { email, password } = req.body;
   if (email === ADMIN.email && password === ADMIN.password) {
@@ -83,12 +78,10 @@ app.post('/api/admin/login', (req, res) => {
   res.status(401).json({ success: false, message: 'Invalid credentials' });
 });
 
-// Admin logout
 app.post('/api/admin/logout', (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
-// Session check
 app.get('/api/admin/check', (req, res) => {
   res.json({ isAdmin: !!req.session.admin });
 });
