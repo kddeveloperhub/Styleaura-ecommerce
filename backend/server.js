@@ -13,16 +13,17 @@ dotenv.config();
 const app = express();
 
 // === CORS CONFIG ===
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://192.168.43.139:3000',
-  'https://styleaura00.netlify.app',
-  'https://685f763--styleaura00.netlify.app',
-];
+
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://192.168.43.139:3000',
+      'https://styleaura00.netlify.app',
+    ];
+
+    if (!origin || allowedOrigins.includes(origin) || origin.includes('netlify.app')) {
       cb(null, true);
     } else {
       cb(new Error('Not allowed by CORS'));
