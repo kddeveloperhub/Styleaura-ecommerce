@@ -14,19 +14,26 @@ dotenv.config();
 const app = express();
 
 // ✅ CORS config
+// ✅ Add this exact domain to CORS
 const allowedOrigins = [
   'http://localhost:3000',
   'http://192.168.43.139:3000',
   'https://styleaura-ecommerce.onrender.com',
-  'https://styleaura-ecommerce.vercel.app',
+  'https://styleaura00.netlify.app', // your Netlify custom domain
+  'https://685f763--styleaura00.netlify.app', // this is the preview deploy URL, also allowed
 ];
+
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(new Error('Not allowed by CORS'));
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
 }));
+
 
 app.use(express.json());
 
