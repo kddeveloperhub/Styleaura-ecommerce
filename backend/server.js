@@ -7,6 +7,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const Order = require('./models/Order');
 
 dotenv.config();
@@ -37,10 +38,15 @@ app.use(session({
   secret: process.env.ADMIN_SECRET || 'default-secret',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions',
+  }),
   cookie: {
     httpOnly: true,
-    secure: true, // ✅ important for cross-origin
-    sameSite: 'none', // ✅ required for Netlify→Render cookies
+    secure: true,        // ✅ needed for Render + Netlify
+    sameSite: 'none',    // ✅ needed for cross-origin cookies
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   },
 }));
 
