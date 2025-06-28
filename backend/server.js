@@ -19,8 +19,7 @@ app.use(cors({
   origin: (origin, cb) => {
     const allowedOrigins = [
       'http://localhost:3000',
-      'http://192.168.43.139:3000',
-      'https://styleaura00.netlify.app',
+      'https://styleaura00.netlify.app'
     ];
 
     if (!origin || allowedOrigins.includes(origin) || origin.includes('netlify.app')) {
@@ -29,7 +28,7 @@ app.use(cors({
       cb(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
+  credentials: true, // ✅ REQUIRED to allow cookies to pass
 }));
 
 app.use(express.json());
