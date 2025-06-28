@@ -29,11 +29,12 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const API_BASE = process.env.REACT_APP_API_URL || 'https://styleaura-ecommerce.onrender.com';
+
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`${apiUrl}/api/orders`, {
+     const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

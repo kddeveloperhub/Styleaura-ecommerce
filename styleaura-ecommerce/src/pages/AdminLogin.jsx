@@ -3,11 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// 👇 Automatically switch between localhost and LAN IP
-const API_BASE =
-  window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : `http://${window.location.hostname}:5000`;
+// ✅ Use environment variable or Render fallback
+const API_BASE = process.env.REACT_APP_API_URL || 'https://styleaura-ecommerce.onrender.com';
 
 const AdminLogin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -38,7 +35,7 @@ const AdminLogin = () => {
       }
 
       toast.success('Login successful');
-      setTimeout(() => navigate('/admin/orders'), 1000);
+      setTimeout(() => navigate('/admin/orders'), 1200);
     } catch (err) {
       console.error('Login error:', err);
       toast.error('Server error or network issue');

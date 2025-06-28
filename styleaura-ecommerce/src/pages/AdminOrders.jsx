@@ -5,10 +5,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE =
-  window.location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : `http://${window.location.hostname}:5000`;
+// ✅ Safer and production-compatible API URL
+const API_BASE = process.env.REACT_APP_API_URL || 'https://styleaura-ecommerce.onrender.com';
+
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);

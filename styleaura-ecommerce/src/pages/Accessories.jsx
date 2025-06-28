@@ -1,3 +1,4 @@
+// src/pages/Accessories.jsx
 import React, { useEffect, useState } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -22,6 +23,8 @@ const Accessories = () => {
     AOS.init({ once: true });
   }, []);
 
+  const API = process.env.REACT_APP_API_URL || 'https://styleaura-ecommerce.onrender.com';
+
   const handleSubscribe = async () => {
     if (!email || !email.includes('@')) {
       return toast.warn('Please enter a valid email address');
@@ -29,7 +32,7 @@ const Accessories = () => {
 
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/newsletter`, {
+      const res = await fetch(`${API}/api/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -71,11 +74,8 @@ const Accessories = () => {
 
       {/* Hero Section */}
       <div className="relative w-full h-[600px] overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-transparent"></div>
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/80 to-transparent" />
         </div>
         <div className="container mx-auto px-4 sm:px-6 h-full flex items-center">
           <div className="max-w-xl relative z-10 px-4 sm:px-0">
@@ -110,7 +110,7 @@ const Accessories = () => {
         <h2 className="text-3xl font-bold text-center mb-2" data-aos="fade-up">Accessories Collection</h2>
         <div className="w-24 h-1 bg-pink-500 mx-auto mb-8"></div>
         <p className="text-center text-gray-600 max-w-3xl mx-auto mb-12" data-aos="fade-up" data-aos-delay="100">
-          Browse our best-selling accessories — handbags, watches, belts, and more — each crafted to elevate your outfit and your confidence.
+          Hand-picked designs to enhance every look. Shop timeless pieces that blend fashion and function effortlessly.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -175,7 +175,7 @@ const Accessories = () => {
       <section className="container mx-auto py-16 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto bg-gradient-to-r from-pink-500 to-cyan-500 rounded-lg shadow-lg p-8 text-center text-white" data-aos="fade-up">
           <h2 className="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
-          <p className="mb-6">Get the latest deals, launches, and styling tips straight to your inbox.</p>
+          <p className="mb-6">Get the latest deals, product drops, and fashion tips sent straight to your inbox.</p>
           <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
             <input
               type="email"

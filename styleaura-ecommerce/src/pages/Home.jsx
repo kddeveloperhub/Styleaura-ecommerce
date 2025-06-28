@@ -13,37 +13,47 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const Home = () => {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     AOS.init({ once: true });
   }, []);
 
-  const handleSubscribe = async () => {
-  if (!email) return toast.warn('Please enter your email');
-  try {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/newsletter`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
+  const API = process.env.REACT_APP_API_URL || 'https://styleaura-ecommerce.onrender.com';
 
-    const data = await res.json();
-    if (data.success) {
-      setEmail('');
-      toast.success('Thanks for subscribing!');
-    } else {
-      toast.error(data.message || 'Failed to subscribe.');
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) {
+      return toast.warn('Please enter a valid email address');
     }
-  } catch (err) {
-    console.error(err);
-    toast.error('Server error. Try again.');
-  }
-};
+
+    try {
+      setLoading(true);
+      const res = await fetch(`${API}/api/newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      setLoading(false);
+      if (data.success) {
+        setEmail('');
+        toast.success('Thanks for subscribing!');
+      } else {
+        toast.error(data.message || 'Subscription failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      toast.error('Server error. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans">
       <ToastContainer position="bottom-center" autoClose={3000} hideProgressBar />
+
       {/* Hero Section */}
       <div className="relative w-full h-[600px] overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
@@ -165,9 +175,10 @@ const Home = () => {
             />
             <button
               onClick={handleSubscribe}
-              className="bg-white text-pink-600 hover:bg-gray-100 py-3 px-6 rounded-lg font-medium transition"
+              disabled={loading}
+              className={`bg-white text-pink-600 hover:bg-gray-100 py-3 px-6 rounded-lg font-medium transition ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Sign Up
+              {loading ? 'Sending...' : 'Sign Up'}
             </button>
           </div>
         </div>
