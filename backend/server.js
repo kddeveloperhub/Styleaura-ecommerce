@@ -20,16 +20,20 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-    else cb(new Error('Not allowed by CORS'));
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
-  credentials: true,
+  credentials: true, // ✅ CRUCIAL for cookies to work
 }));
 
 app.use(express.json());
 
-// === SESSION SETUP ===
+
+// ==== SESSION (REQUIRED FOR LOGIN PERSISTENCE) ====
 app.use(session({
   secret: process.env.ADMIN_SECRET || 'default-secret',
   resave: false,
@@ -40,11 +44,13 @@ app.use(session({
   }),
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // ✅ Important for Render
-    sameSite: 'none', // ✅ Required for cross-origin (Netlify)
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    secure: true,        // ✅ Must be true for HTTPS on Render
+    sameSite: 'none',    // ✅ Required for cross-origin (Netlify + Render)
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   },
 }));
+
+
 
 // === CONNECT MONGO ===
 mongoose.connect(process.env.MONGO_URI)
