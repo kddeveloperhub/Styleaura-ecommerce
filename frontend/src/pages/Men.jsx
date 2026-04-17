@@ -29,7 +29,7 @@ const Men = () => {
   }, []);
 
   const products = [
-    { id: 1, name: 'Denim Shirt', price: 22, brand: 'DenimCo', style: 'Casual', color: 'Blue', image: denimShirt, stock: true },
+    { id: 1, name: 'Denim Shirt', price: 0.1, brand: 'DenimCo', style: 'Casual', color: 'Blue', image: denimShirt, stock: true },
     { id: 2, name: 'Denim Jeans', price: 25, brand: 'DenimCo', style: 'Casual', color: 'Blue', image: denimJeans, stock: true },
     { id: 3, name: 'V-Neck Sweater', price: 20, brand: 'StyleAura', style: 'Smart Casual', color: 'Brown', image: sweater, stock: true },
     { id: 4, name: 'Formal Shirt', price: 10, brand: 'FormalFit', style: 'Formal', color: 'White', image: formalShirt, stock: true },
