@@ -15,7 +15,7 @@ import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { logout } from "../services/authService";
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -118,7 +118,7 @@ const AdminDashboard = () => {
     );
   }
 
-  const { totalOrders, totalSales, statusCount, topProducts, chartData } = analytics;
+  const { totalOrders, totalSales, statusCount, topProducts} = analytics;
 
   const cards = [
     {
@@ -184,14 +184,7 @@ const AdminDashboard = () => {
           📈 Revenue Trend
         </h3>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="value" />
-          </LineChart>
-        </ResponsiveContainer>
+        
       </div>
 
       {/* TOP PRODUCTS */}
