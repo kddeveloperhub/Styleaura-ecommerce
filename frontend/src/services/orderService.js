@@ -26,14 +26,14 @@ export const placeOrder = async (orderData) => {
       items: orderData.items, // backend will calculate total
     };
 
-    const res = await fetch("http://localhost:5000/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify(payload),
+});
 
     const data = await res.json();
 

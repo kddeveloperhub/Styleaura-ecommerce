@@ -16,7 +16,7 @@ const AdminOrders = () => {
 
       const token = await user.getIdToken();
 
-      const res = await fetch("http://localhost:5000/api/orders", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,7 +52,7 @@ const AdminOrders = () => {
       const token = await user.getIdToken();
 
       const res = await fetch(
-        `http://localhost:5000/api/orders/${id}`,
+     `${process.env.REACT_APP_API_URL}/api/orders/${id}`,
         {
           method: "PUT",
           headers: {

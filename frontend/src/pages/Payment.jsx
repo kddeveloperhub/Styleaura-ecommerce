@@ -65,7 +65,7 @@ const Payment = () => {
 
       // 🔥 SEND ONLY orderId (SECURE)
       const res = await fetch(
-        "http://localhost:5000/api/payment/create-order",
+        `${process.env.REACT_APP_API_URL}/api/payment/create-order`,
         {
           method: "POST",
           headers: {
@@ -97,7 +97,7 @@ const Payment = () => {
         handler: async function (response) {
           try {
             const verifyRes = await fetch(
-              "http://localhost:5000/api/payment/verify",
+              `${process.env.REACT_APP_API_URL}/api/payment/verify`,
               {
                 method: "POST",
                 headers: {

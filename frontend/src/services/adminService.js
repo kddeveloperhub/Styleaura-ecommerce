@@ -11,7 +11,7 @@ export const getAllOrders = async () => {
 
     const token = await user.getIdToken();
 
-    const res = await fetch("http://localhost:5000/api/orders", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -43,8 +43,7 @@ export const updateOrder = async (id, updates) => {
 
     const token = await user.getIdToken();
 
-    const res = await fetch(
-      `http://localhost:5000/api/orders/${id}`,
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders/${id}`, 
       {
         method: "PUT",
         headers: {
