@@ -6,7 +6,7 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
 
   // =========================
-  // 🔥 FETCH FROM BACKEND
+  // 🔥 FETCH ORDERS
   // =========================
   useEffect(() => {
     const fetchOrders = async () => {
@@ -21,17 +21,18 @@ const MyOrders = () => {
 
         const token = await user.getIdToken();
 
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/orders`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to fetch orders");
-        }
+        if (!res.ok) throw new Error(data.message);
 
         setOrders(data);
       } catch (err) {
@@ -45,7 +46,7 @@ const MyOrders = () => {
   }, []);
 
   // =========================
-  // 💰 FORMAT INR (USED NOW ✅)
+  // 💰 FORMAT INR
   // =========================
   const formatINR = (amount) =>
     new Intl.NumberFormat("en-IN", {
@@ -55,23 +56,56 @@ const MyOrders = () => {
     }).format(amount || 0);
 
   // =========================
-  // 📅 SAFE DATE FORMAT
+  // 📅 FORMAT DATE
   // =========================
   const formatDate = (createdAt) => {
     if (!createdAt) return "N/A";
 
-    // Firestore Timestamp
     if (createdAt.seconds) {
       return new Date(createdAt.seconds * 1000).toLocaleDateString();
     }
 
-    // JS Date (backend)
     if (createdAt._seconds) {
       return new Date(createdAt._seconds * 1000).toLocaleDateString();
     }
 
-    // ISO string fallback
     return new Date(createdAt).toLocaleDateString();
+  };
+
+  // =========================
+  // 🎨 STATUS COLOR
+  // =========================
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-700";
+      case "Shipped":
+        return "bg-purple-100 text-purple-700";
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+      default:
+        return "bg-gray-100";
+    }
+  };
+
+  // =========================
+  // 🚚 PROGRESS BAR
+  // =========================
+  const getStep = (status) => {
+    switch (status) {
+      case "Pending":
+        return 1;
+      case "Confirmed":
+        return 2;
+      case "Shipped":
+        return 3;
+      case "Delivered":
+        return 4;
+      default:
+        return 1;
+    }
   };
 
   // =========================
@@ -97,45 +131,82 @@ const MyOrders = () => {
         </p>
       ) : (
         <div className="max-w-4xl mx-auto space-y-6">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="border rounded-lg p-5 shadow-sm"
-            >
-              {/* HEADER */}
-              <div className="flex justify-between mb-3">
-                <p className="font-semibold">Order ID: {order.id}</p>
-                <p className="text-sm text-gray-500">
-                  {formatDate(order.createdAt)}
-                </p>
-              </div>
+          {orders.map((order) => {
+            const step = getStep(order.status);
 
-              {/* ITEMS */}
-              <div className="space-y-1 text-sm text-gray-700">
-                {order.items?.map((item, i) => (
-                  <p key={i}>
-                    {item.name} × {item.quantity}
+            return (
+              <div
+                key={order.id}
+                className="border rounded-xl p-5 shadow hover:shadow-md transition"
+              >
+                {/* HEADER */}
+                <div className="flex justify-between mb-3">
+                  <p className="font-semibold text-sm">
+                    Order ID: {order.id}
                   </p>
-                ))}
-              </div>
+                  <p className="text-sm text-gray-500">
+                    {formatDate(order.createdAt)}
+                  </p>
+                </div>
 
-              {/* TOTAL + STATUS */}
-              <div className="mt-3 flex justify-between items-center">
-                <p className="font-bold text-pink-600">
-                  {formatINR(order.totalINR)}
-                </p>
+                {/* ITEMS */}
+                <div className="space-y-1 text-sm text-gray-700">
+                  {order.items?.map((item, i) => (
+                    <p key={i}>
+                      {item.name} × {item.quantity}
+                    </p>
+                  ))}
+                </div>
 
-                <div className="text-sm">
-                  <span className="mr-3">
-                    Status: <strong>{order.status}</strong>
-                  </span>
-                  <span>
-                    Payment: <strong>{order.paymentStatus}</strong>
-                  </span>
+                {/* PROGRESS BAR */}
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Pending</span>
+                    <span>Confirmed</span>
+                    <span>Shipped</span>
+                    <span>Delivered</span>
+                  </div>
+
+                  <div className="w-full bg-gray-200 h-2 rounded">
+                    <div
+                      className="bg-pink-500 h-2 rounded transition-all"
+                      style={{ width: `${(step / 4) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* TOTAL + STATUS */}
+                <div className="mt-4 flex justify-between items-center">
+                  <p className="font-bold text-pink-600">
+                    {formatINR(order.totalINR)}
+                  </p>
+
+                  <div className="flex gap-2 items-center text-xs">
+
+                    {/* STATUS */}
+                    <span
+                      className={`px-2 py-1 rounded ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+
+                    {/* PAYMENT */}
+                    <span
+                      className={`px-2 py-1 rounded ${
+                        order.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {order.paymentStatus}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

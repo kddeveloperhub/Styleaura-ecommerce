@@ -6,32 +6,34 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
 
   // =========================
-  // 🔥 FETCH ORDERS (BACKEND)
+  // 🔥 FETCH ORDERS
   // =========================
   const fetchOrders = async () => {
     try {
       const user = auth.currentUser;
-
       if (!user) return;
 
       const token = await user.getIdToken();
 
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/orders`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to fetch orders");
+        throw new Error(data.message || "Failed");
       }
 
       setOrders(data);
 
     } catch (err) {
-      console.error("❌ Fetch Orders Error:", err);
+      console.error("❌ Fetch Error:", err);
     } finally {
       setLoading(false);
     }
@@ -42,7 +44,7 @@ const AdminOrders = () => {
   }, []);
 
   // =========================
-  // 🔥 UPDATE STATUS (BACKEND)
+  // 🔥 UPDATE STATUS
   // =========================
   const updateStatus = async (id, field, value) => {
     try {
@@ -51,8 +53,8 @@ const AdminOrders = () => {
 
       const token = await user.getIdToken();
 
-      const res = await fetch(
-     `${process.env.REACT_APP_API_URL}/api/orders/${id}`,
+      await fetch(
+        `${process.env.REACT_APP_API_URL}/api/orders/${id}`,
         {
           method: "PUT",
           headers: {
@@ -65,17 +67,28 @@ const AdminOrders = () => {
         }
       );
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Update failed");
-      }
-
-      // 🔄 refresh list
       fetchOrders();
 
     } catch (err) {
       console.error("❌ Update Error:", err);
+    }
+  };
+
+  // =========================
+  // 🎨 STATUS BADGE
+  // =========================
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "Confirmed":
+        return "bg-blue-100 text-blue-700";
+      case "Shipped":
+        return "bg-purple-100 text-purple-700";
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+      default:
+        return "bg-gray-100";
     }
   };
 
@@ -105,13 +118,13 @@ const AdminOrders = () => {
                 <th className="p-3">Amount</th>
                 <th className="p-3">Status</th>
                 <th className="p-3">Payment</th>
-                <th className="p-3">Action</th>
+                <th className="p-3">Date</th>
               </tr>
             </thead>
 
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b">
+                <tr key={order.id} className="border-b hover:bg-gray-50">
 
                   {/* CUSTOMER */}
                   <td className="p-3">
@@ -135,14 +148,23 @@ const AdminOrders = () => {
 
                   {/* STATUS */}
                   <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded text-xs mr-2 ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+
                     <select
                       value={order.status}
                       onChange={(e) =>
                         updateStatus(order.id, "status", e.target.value)
                       }
-                      className="border px-2 py-1 rounded"
+                      className="border px-2 py-1 rounded text-sm"
                     >
                       <option>Pending</option>
+                      <option>Confirmed</option>
                       <option>Shipped</option>
                       <option>Delivered</option>
                     </select>
@@ -150,20 +172,33 @@ const AdminOrders = () => {
 
                   {/* PAYMENT */}
                   <td className="p-3">
-                    <select
-                      value={order.paymentStatus}
-                      onChange={(e) =>
-                        updateStatus(
-                          order.id,
-                          "paymentStatus",
-                          e.target.value
-                        )
-                      }
-                      className="border px-2 py-1 rounded"
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        order.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
                     >
-                      <option>Pending</option>
-                      <option>Paid</option>
-                    </select>
+                      {order.paymentStatus}
+                    </span>
+
+                    {/* 🔒 disable manual change if paid */}
+                    {order.paymentStatus !== "Paid" && (
+                      <select
+                        value={order.paymentStatus}
+                        onChange={(e) =>
+                          updateStatus(
+                            order.id,
+                            "paymentStatus",
+                            e.target.value
+                          )
+                        }
+                        className="border px-2 py-1 rounded text-sm mt-1"
+                      >
+                        <option>Pending</option>
+                        <option>Paid</option>
+                      </select>
+                    )}
                   </td>
 
                   {/* DATE */}
