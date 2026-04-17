@@ -92,7 +92,7 @@ const Checkout = () => {
 
         // 🔥 Navigate with ORDER ID (IMPORTANT)
         setTimeout(() => {
-          navigate(`/payment/${res.id}`);
+          navigate(`/payment/${res.orderId}`);
         }, 1200);
 
       } else {
