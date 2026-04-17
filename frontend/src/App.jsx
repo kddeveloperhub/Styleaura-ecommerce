@@ -25,7 +25,7 @@ import Signup from "./pages/Signup";
 
 // Admin
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminOrdersFirebase from "./pages/AdminOrdersFirebase";
+
 
 const App = () => {
   return (
@@ -198,16 +198,7 @@ const App = () => {
         }
       />
 
-      <Route
-        path="/admin/orders"
-        element={
-          <ProtectedRoute adminOnly={true}>
-            <Layout>
-              <AdminOrdersFirebase />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
+      
 
       {/* ❌ FALLBACK */}
       <Route

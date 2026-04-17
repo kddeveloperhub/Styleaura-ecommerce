@@ -11,16 +11,16 @@ import {
 } from "react-icons/fa";
 
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { db, auth } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { logout } from "../services/authService";
-
-
 
 import "react-toastify/dist/ReactToastify.css";
 
 const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
+  const [orders, setOrders] = useState([]);
+
   const navigate = useNavigate();
   const { user, role, loading } = useAuth();
 
@@ -40,28 +40,27 @@ const AdminDashboard = () => {
     const fetchOrders = async () => {
       try {
         const snapshot = await getDocs(collection(db, "orders"));
-        const orders = snapshot.docs.map((doc) => doc.data());
 
-        const totalOrders = orders.length;
+        const ordersData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        const totalSales = orders.reduce(
+        setOrders(ordersData);
+
+        const totalOrders = ordersData.length;
+
+        const totalSales = ordersData.reduce(
           (sum, o) => sum + (o.totalINR || 0),
           0
         );
 
         const statusCount = {};
         const productMap = {};
-        const salesByDay = {};
 
-        orders.forEach((order) => {
+        ordersData.forEach((order) => {
           const status = order.status || "Pending";
           statusCount[status] = (statusCount[status] || 0) + 1;
-
-          const date = order.createdAt?.seconds
-            ? new Date(order.createdAt.seconds * 1000).toLocaleDateString()
-            : "Unknown";
-
-          salesByDay[date] = (salesByDay[date] || 0) + (order.totalINR || 0);
 
           order.items?.forEach((item) => {
             if (!productMap[item.name]) {
@@ -75,27 +74,52 @@ const AdminDashboard = () => {
           .sort((a, b) => b.quantity - a.quantity)
           .slice(0, 5);
 
-        const chartData = Object.entries(salesByDay).map(([date, value]) => ({
-          date,
-          value,
-        }));
-
         setAnalytics({
           totalOrders,
           totalSales,
           statusCount,
           topProducts,
-          chartData,
         });
 
       } catch (err) {
         console.error(err);
-        toast.error("Failed to load analytics");
+        toast.error("Failed to load data");
       }
     };
 
     fetchOrders();
   }, []);
+
+  // 🔥 UPDATE STATUS
+  const updateStatus = async (id, field, value) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const token = await user.getIdToken();
+
+      await fetch(`${process.env.REACT_APP_API_URL}/api/orders/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          [field]: value,
+        }),
+      });
+
+      // 🔄 UI update
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === id ? { ...o, [field]: value } : o
+        )
+      );
+
+    } catch (err) {
+      console.error("Update error:", err);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -113,100 +137,138 @@ const AdminDashboard = () => {
   if (loading || !analytics) {
     return (
       <div className="flex items-center justify-center min-h-screen text-gray-500">
-        <p className="animate-pulse text-lg">Loading dashboard...</p>
+        Loading dashboard...
       </div>
     );
   }
 
-  const { totalOrders, totalSales, statusCount, topProducts} = analytics;
-
-  const cards = [
-    {
-      icon: <FaShoppingCart />,
-      title: "Orders",
-      value: totalOrders,
-      color: "from-pink-500 to-pink-600",
-    },
-    {
-      icon: <FaRupeeSign />,
-      title: "Revenue",
-      value: formatINR(totalSales),
-      color: "from-green-500 to-green-600",
-    },
-    {
-      icon: <FaClock />,
-      title: "Pending",
-      value: statusCount?.Pending || 0,
-      color: "from-yellow-400 to-yellow-500",
-    },
-    {
-      icon: <FaCheckCircle />,
-      title: "Delivered",
-      value: statusCount?.Delivered || 0,
-      color: "from-blue-500 to-blue-600",
-    },
-  ];
+  const { totalOrders, totalSales, statusCount, topProducts } = analytics;
 
   return (
-    <div className="min-h-screen px-4 py-10 bg-gradient-to-br from-gray-100 to-white relative">
+    <div className="min-h-screen px-4 py-10 bg-gray-100 relative">
 
-      <ToastContainer position="top-center" autoClose={3000} hideProgressBar />
+      <ToastContainer position="top-center" autoClose={3000} />
 
       {/* Logout */}
       <button
         onClick={handleLogout}
-        className="absolute top-6 right-6 bg-pink-600 text-white px-4 py-2 rounded-lg shadow hover:scale-105 transition"
+        className="absolute top-6 right-6 bg-pink-600 text-white px-4 py-2 rounded"
       >
         <FaSignOutAlt /> Logout
       </button>
 
-      <h2 className="text-4xl font-bold text-center mb-12 text-pink-600">
+      <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">
         📊 Admin Dashboard
       </h2>
 
       {/* CARDS */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {cards.map((card, i) => (
-          <div
-            key={i}
-            className={`bg-gradient-to-r ${card.color} text-white p-6 rounded-xl shadow-lg hover:scale-105 transition`}
-          >
-            <div className="text-2xl mb-2">{card.icon}</div>
-            <h3>{card.title}</h3>
-            <p className="text-2xl font-bold">{card.value}</p>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="bg-pink-500 text-white p-6 rounded">
+          <FaShoppingCart />
+          <p>Orders</p>
+          <h2>{totalOrders}</h2>
+        </div>
+
+        <div className="bg-green-500 text-white p-6 rounded">
+          <FaRupeeSign />
+          <p>Revenue</p>
+          <h2>{formatINR(totalSales)}</h2>
+        </div>
+
+        <div className="bg-yellow-400 text-white p-6 rounded">
+          <FaClock />
+          <p>Pending</p>
+          <h2>{statusCount?.Pending || 0}</h2>
+        </div>
+
+        <div className="bg-blue-500 text-white p-6 rounded">
+          <FaCheckCircle />
+          <p>Delivered</p>
+          <h2>{statusCount?.Delivered || 0}</h2>
+        </div>
+      </div>
+
+      {/* 🔥 MANAGE ORDERS */}
+      <div className="bg-white p-6 rounded shadow mb-10">
+        <h3 className="text-xl font-bold mb-4 text-pink-600">
+          📦 Manage Orders
+        </h3>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-pink-500 text-white">
+              <tr>
+                <th className="p-2">Customer</th>
+                <th className="p-2">Amount</th>
+                <th className="p-2">Status</th>
+                <th className="p-2">Payment</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.id} className="border-b">
+
+                  <td className="p-2">
+                    <p>{order.name}</p>
+                    <small>{order.email}</small>
+                  </td>
+
+                  <td className="p-2 text-pink-600">
+                    ₹{order.totalINR}
+                  </td>
+
+                  <td className="p-2">
+                    <select
+                      value={order.status}
+                      onChange={(e) =>
+                        updateStatus(order.id, "status", e.target.value)
+                      }
+                    >
+                      <option>Pending</option>
+                      <option>Confirmed</option>
+                      <option>Shipped</option>
+                      <option>Delivered</option>
+                    </select>
+                  </td>
+
+                  <td className="p-2">
+                    <select
+                      value={order.paymentStatus}
+                      onChange={(e) =>
+                        updateStatus(
+                          order.id,
+                          "paymentStatus",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option>Pending</option>
+                      <option>Paid</option>
+                    </select>
+                  </td>
+
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* TOP PRODUCTS */}
+      <div className="bg-white p-6 rounded shadow max-w-3xl mx-auto">
+        <h3 className="text-xl font-bold mb-4 text-pink-600">
+          <FaBoxOpen /> Top Products
+        </h3>
+
+        {topProducts.map((item, i) => (
+          <div key={i} className="flex justify-between">
+            <span>{item.name}</span>
+            <span>× {item.quantity}</span>
           </div>
         ))}
       </div>
 
-      {/* CHART */}
-      <div className="bg-white p-6 rounded-xl shadow mb-12">
-        <h3 className="text-xl font-bold mb-4 text-pink-600">
-          📈 Revenue Trend
-        </h3>
-
-        
-      </div>
-
-      {/* TOP PRODUCTS */}
-      <div className="bg-white p-6 rounded-xl shadow max-w-3xl mx-auto">
-        <h3 className="text-xl font-bold mb-4 text-pink-600 flex items-center gap-2">
-          <FaBoxOpen /> Top Products
-        </h3>
-
-        <ul className="space-y-2">
-          {topProducts.map((item, idx) => (
-            <li
-              key={idx}
-              className="flex justify-between border-b pb-2"
-            >
-              <span>{item.name}</span>
-              <span className="text-pink-600 font-semibold">
-                × {item.quantity}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 };
