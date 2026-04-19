@@ -56,7 +56,12 @@ const Navbar = () => {
             <Link to="/women">Women</Link>
             <Link to="/accessories">Accessories</Link>
             <Link to="/wishlist">Wishlist</Link>
+
             {user && <Link to="/my-orders">Orders</Link>}
+
+            {/* ✅ FIX: CONTACT ADD */}
+            <Link to="/contact">Contact</Link>
+
             {isAdmin && !isLoadingRole && (
               <Link to="/admin/dashboard" className="text-cyan-600 font-semibold">
                 Admin
